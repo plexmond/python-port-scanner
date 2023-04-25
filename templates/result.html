@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Port Scanner Results</title>
+  </head>
+  <body>
+    <h1>Port Scanner Results</h1>
+    <table>
+      <thead>
+        <tr>
+          <th>Port Number</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for port in open_ports %}
+        <tr>
+          <td>{{ port }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% if not open_ports %}
+    <p>No open ports found.</p>
+    {% endif %}
+  </body>
+</html>

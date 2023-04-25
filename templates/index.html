@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Port Scanner</title>
+</head>
+<body>
+    <h1>Port Scanner</h1>
+    <form action="/" method="POST">
+        <label for="hostname">Hostname:</label>
+        <input type="text" name="hostname" required><br><br>
+        <label for="startport">Start Port:</label>
+        <input type="number" name="startport" min="1" max="65535" required><br><br>
+        <label for="endport">End Port:</label>
+        <input type="number" name="endport" min="1" max="65535" required><br><br>
+        <input type="submit" value="Scan">
+    </form>
+</body>
+</html>

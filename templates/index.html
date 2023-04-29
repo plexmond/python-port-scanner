@@ -1,18 +1,47 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>Port Scanner</title>
 </head>
+
 <body>
     <h1>Port Scanner</h1>
-    <form action="/" method="POST">
+
+    <form method="post">
         <label for="hostname">Hostname:</label>
-        <input type="text" name="hostname" required><br><br>
-        <label for="startport">Start Port:</label>
-        <input type="number" name="startport" min="1" max="65535" required><br><br>
-        <label for="endport">End Port:</label>
-        <input type="number" name="endport" min="1" max="65535" required><br><br>
-        <input type="submit" value="Scan">
+        <input type="text" id="hostname" name="hostname" required>
+
+        <label for="option">Scan options:</label>
+        <select id="option" name="option" required>
+            <option value="custom">Custom</option>
+            <option value="common10">10 most common ports</option>
+            <option value="common50">50 most common ports</option>
+        </select>
+
+        <div id="port-range">
+            <label for="startport">Starting port:</label>
+            <input type="number" id="startport" name="startport" value="1" min="1" max="65535" required>
+
+            <label for="endport">Ending port:</label>
+            <input type="number" id="endport" name="endport" value="65535" min="1" max="65535" required>
+        </div>
+
+        <button type="submit">Scan</button>
     </form>
+
+    <script>
+        const option = document.getElementById("option");
+        const portRange = document.getElementById("port-range");
+
+        option.addEventListener("change", () => {
+            if (option.value === "common10" || option.value === "common50") {
+                portRange.style.display = "none";
+            } else {
+                portRange.style.display = "block";
+            }
+        });
+    </script>
 </body>
+
 </html>

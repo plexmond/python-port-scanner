@@ -1,26 +1,104 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <title>Port Scanner Results</title>
-  </head>
-  <body>
-    <h1>Port Scanner Results</h1>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Port Scanner Results</title>
+  <link rel="stylesheet" type="text/css" href="static/css/style.css">
+</head>
+
+<body>
+  <header>
+    <a href="{{ url_for('index') }}" class="home-button">Home</a>
+  </header>
+  <h1>Port Scanner results for: {{ hostname }}</h1>
+
+  {% if headers %}
+  <div class="result">
+    <h2>HTTP Header:</h2>
     <table>
       <thead>
         <tr>
-          <th>Port Number</th>
+          <th>Header</th>
+          <th>Value</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for key, value in headers.items() %}
+        <tr>
+          <td>{{ key }}</td>
+          <td>{{ value }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+
+  <div class="result">
+    <p class="result-summary">
+      {% if start_port != 0 and end_port != 0 %}
+      Scanned ports from {{ start_port }} to {{ end_port }}
+      {% else %}
+      Scanned common ports
+      {% endif %}
+      <br>
+      Number of ports scanned: {{ total_ports }}
+      <br>
+      <br>
+      Scan started at: {{ timestamp_to_str(start_time|round|int) }}
+      <br>
+      Scan ended at: {{ timestamp_to_str(end_time|round|int) }}
+      <br>
+      Scan duration: {{ scan_duration|round(2) }} seconds
+    </p>
+
+    {% if open_ports %}
+    <h2>Open ports:</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Port</th>
+          <th>Service</th>
         </tr>
       </thead>
       <tbody>
         {% for port in open_ports %}
         <tr>
           <td>{{ port }}</td>
+          <td>{{ port_services[port] }}</td>
         </tr>
         {% endfor %}
       </tbody>
     </table>
-    {% if not open_ports %}
+    {% else %}
     <p>No open ports found.</p>
     {% endif %}
-  </body>
+  </div>
+
+  <div class="result">
+    <h2>Send scanning result to email:</h2>
+    <form method="post" action="{{ url_for('resend_results') }}">
+      <label for="email">Email:</label>
+      <input type="email" id="email" name="email">
+      <input type="hidden" id="hostname" name="hostname" value="{{ hostname }}">
+      <input type="hidden" id="startport" name="startport" value="{{ start_port }}">
+      <input type="hidden" id="endport" name="endport" value="{{ end_port }}">
+      <input type="hidden" id="total_ports" name="total_ports" value="{{ total_ports }}">
+      <input type="hidden" id="open_ports" name="open_ports" value="{{ open_ports|join(',') }}">
+      <input type="hidden" id="port_services" name="port_services" value="{{ port_services|tojson }}">
+
+      <input type="hidden" id="start_time" name="start_time" value="{{ start_time }}">
+      <input type="hidden" id="end_time" name="end_time" value="{{ end_time }}">
+      <input type="hidden" id="scan_duration" name="scan_duration" value="{{ scan_duration }}">
+      <br>
+      <br>
+      <div class="button-wrapper">
+        <button type="submit">Send result!</button>
+      </div>
+    </form>
+  </div>
+</body>
+
 </html>

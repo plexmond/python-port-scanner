@@ -1,67 +1,142 @@
 from flask import Flask, request, render_template
-import socket
+import time
+import datetime
+from port_scanner import *
+from mail import send_mail
+from config import Config
+
+# timestamp
+def timestamp_to_str(timestamp):
+    return datetime.datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S')
+
 
 app = Flask(__name__)
 
+# main route
 @app.route('/', methods=['GET', 'POST'])
 def index():
+    start_port = 0
+    end_port = 0
+    open_ports = []
+
     if request.method == 'POST':
         hostname = request.form['hostname']
-        start_port = int(request.form['startport'])
-        end_port = int(request.form['endport'])
         scan_option = request.form['option']
+        concurrent = int(request.form['concurrent'])
+        timeout = float(request.form['timeout'])
 
         if scan_option == 'custom':
-            open_ports = scan_ports(hostname, start_port, end_port)
-        elif scan_option == 'common10':
-            start_port = 1
-            end_port = 1024
-            open_ports = scan_common_ports(hostname, [21, 22, 23, 25, 53, 80, 110, 143, 443, 3389])
-        elif scan_option == 'common50':
-            start_port = 1
-            end_port = 65535
-            open_ports = scan_common_ports(hostname, [21, 22, 23, 25, 53, 80, 110, 143, 443, 3389, 1723, 3306, 5900, 8080, 8443, 8888, 9999, 10000, 32768, 49152, 49153, 49154, 49155, 49156, 49157, 49158, 49159, 49160, 49161, 49162, 49163, 49164, 49165, 49166, 49167, 49168, 49169, 49170, 49171, 49172, 49173, 49174, 49175, 49176, 49177, 49178, 49179, 49180])
+            start_port = int(request.form['startport'])
+            end_port = int(request.form['endport'])
+        elif scan_option == 'single':
+            start_port = int(request.form['startport'])
+            end_port = start_port
 
-        return render_template('result.html', 
+        ports_to_scan = get_ports_to_scan(scan_option, start_port, end_port)
+
+        start_time = time.time()
+        open_ports = scan_ports(hostname, ports_to_scan, concurrent, timeout)
+        end_time = time.time()
+
+        scan_duration = end_time - start_time
+
+        headers = None
+        if request.form.get('headers'):
+            headers = get_http_headers(hostname)
+
+        port_services = get_common_port_services(open_ports) if start_port == 0 and end_port == 0 else {}
+        for port in open_ports:
+            service = get_service_from_csv(port)
+            port_services[port] = service
+
+        # email template
+        content = render_template('email_content.html',
+                                  hostname=hostname,
+                                  start_port=start_port,
+                                  end_port=end_port,
+                                  total_ports=len(ports_to_scan),
+                                  open_ports=open_ports,
+                                  port_services=port_services,
+                                  headers=headers,
+                                  start_time=start_time,
+                                  end_time=end_time,
+                                  scan_duration=scan_duration,
+                                  timestamp_to_str=timestamp_to_str)
+
+        # mail info
+        email = request.form.get('email')
+        if email:
+            subject = f'Port scan results for {hostname}'
+            send_mail(email, subject, content)
+
+        # result template
+        return render_template('result.html',
                                hostname=hostname,
                                start_port=start_port,
                                end_port=end_port,
-                               total_ports=end_port - start_port + 1,
-                               open_ports=open_ports)
+                               total_ports=len(ports_to_scan),
+                               open_ports=open_ports,
+                               port_services=port_services,
+                               headers=headers,
+                               start_time=start_time,
+                               end_time=end_time,
+                               scan_duration=scan_duration,
+                               timestamp_to_str=timestamp_to_str)
 
     return render_template('index.html')
 
-def scan_ports(hostname, start_port, end_port):
-    open_ports = []
-    for port in range(start_port, end_port+1):
-        address = (hostname, port)
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.settimeout(1)
-        result = s.connect_ex(address)
-        if result == 0:
-            service = get_service_name(port)
-            open_ports.append((port, service))
-        s.close()
-    return open_ports
 
-def scan_common_ports(hostname, port_list):
-    open_ports = []
-    for port in port_list:
-        address = (hostname, port)
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.settimeout(1)
-        result = s.connect_ex(address)
-        if result == 0:
-            service = get_service_name(port)
-            open_ports.append((port, service))
-        s.close()
-    return open_ports
+# mail results route
+@app.route('/resend_results', methods=['POST'])
+def resend_results():
+    hostname = request.form['hostname']
+    start_port = int(request.form['startport'])
+    end_port = int(request.form['endport'])
+    total_ports = int(request.form['total_ports'])
+    open_ports = request.form['open_ports'].split(',')
+    port_services = request.form['port_services']
+    headers = {}  
+    if request.form.get('headers'):
+        headers = request.form['headers']
+    start_time = float(request.form['start_time'])
+    end_time = float(request.form['end_time'])
+    scan_duration = float(request.form['scan_duration'])
 
-def get_service_name(port):
-    try:
-        return socket.getservbyport(port)
-    except OSError:
-        return "Unknown"
+    # email template
+    content = render_template('email_content.html', 
+                              hostname=hostname,
+                              start_port=start_port,
+                              end_port=end_port,
+                              total_ports=total_ports,
+                              open_ports=open_ports,
+                              port_services=port_services,
+                              headers=headers,
+                              start_time=start_time,
+                              end_time=end_time,
+                              scan_duration=scan_duration,
+                              timestamp_to_str=timestamp_to_str)
 
+    # mail info
+    email = request.form['email']
+    if email:
+        subject = f'Port scan results for {hostname}'
+        send_mail(email, subject, content)
+
+    # return original values
+    return render_template('result.html', 
+                           hostname=hostname,
+                           start_port=start_port,
+                           end_port=end_port,
+                           total_ports=total_ports,
+                           open_ports=open_ports,
+                           port_services=port_services,
+                           headers=headers,
+                           start_time=start_time,
+                           end_time=end_time,
+                           scan_duration=scan_duration,
+                           timestamp_to_str=timestamp_to_str)
+
+
+# debug mode,  running the website in test mode
 if __name__ == '__main__':
     app.run(debug=True)

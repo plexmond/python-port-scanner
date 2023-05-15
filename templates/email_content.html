@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Port Scanner Results</title>
+</head>
+
+<body>
+    <h1>Port Scanner results for: {{ hostname }}</h1>
+
+
+
+    {% if start_port != 0 and end_port != 0 %}
+    <p>Scanned ports from {{ start_port }} to {{ end_port }}</p>
+    {% else %}
+    <p>Scanned common ports</p>
+    {% endif %}
+
+    <p>Number of ports scanned: {{ total_ports }}</p>
+    <p>Scan started at: {{ timestamp_to_str(start_time|round|int) }}</p>
+    <p>Scan ended at: {{ timestamp_to_str(end_time|round|int) }}</p>
+    <p>Scan duration: {{ scan_duration|round(2) }} seconds</p>
+
+    {% if open_ports %}
+    <h2>Open ports:</h2>
+    {% for port in open_ports %}
+
+    <p>Port: {{ port }}, Service: {{ port_services[port] }}</p>
+    {% endfor %}
+    {% else %}
+    <p>No open ports found.</p>
+    {% endif %}
+</body>
+
+</html>

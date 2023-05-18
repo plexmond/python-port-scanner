@@ -1,0 +1,59 @@
+# een docker-image als  bouwomgeving
+image: docker:latest
+
+# docker service voor auto TLS cert
+services:
+  - docker:dind
+
+#  pipeline vars
+variables:
+  # DOCKER_DRIVER: overlay2
+  DOCKER_TLS_CERTDIR: ""
+  AZURE_REGISTRY: <container_regist_naam>.azurecr.io # variable mogelijk?
+  IMAGE_NAME: $CI_REGISTRY_IMAGE:$CI_COM_NAME
+
+# verschillende fasen van ci/cd, opgedeeld in container builden, pushen en deployen.
+stages:
+  - build
+  - push
+  - deploy
+
+# login voor uitvoering
+before_script:
+  - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+
+# bouwen
+build:
+  stage: build
+  script:
+    # bouwen van docker image
+    - docker build -t $IMAGE_NAME .
+  only:
+    - main
+
+# het push-stadium van de pipeline
+push:
+  stage: push
+  script:
+    # dit script pusht de Docker-image naar Docker Hub
+    - docker push $IMAGE_NAME
+  only:
+    - main
+
+# deployen 
+deploy:
+  stage: deploy
+  #
+  image: #
+  script:
+    # log in op Azure, importeert de image naar ACR
+    # haalt de inloggegevens voor de AKS op en werkt de kubernetes-deployment bij met de nieuwe image
+    - az login --service-principal -u $AZURE_APP_ID -p $AZURE_PASSWORD --tenant $AZURE_TENANT_ID
+
+    - az acr login --name $AZURE_REGISTRY
+    - az acr import --name $AZURE_REGISTRY --source $IMAGE_NAME --force
+    - az aks get-credentials --resource-group $AZURE_RESOURCE_GROUP --name $AZURE_KUBERNETES_SERVICE
+    # niet nodig???? kubectl set image deployment/<your_deployment_name> <your_container_name>=$IMAGE_NAME
+  only:
+  
+    - main

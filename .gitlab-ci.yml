@@ -1,8 +1,5 @@
 image: mcr.microsoft.com/azure-cli
 
-services:
-  - docker:dind
-
 variables:
   DOCKER_TLS_CERTDIR: ""
   AZURE_REGISTRY: $AZURE_REGISTRY

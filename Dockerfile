@@ -1,6 +1,9 @@
 # base image
 FROM python:3.11
 
+# azure cli voor az credentials
+RUN curl -sL https://aka.ms/InstallAzureCLIDeb | bash
+
 # Set a working directory inside the container. (app directory)
 WORKDIR /app
 

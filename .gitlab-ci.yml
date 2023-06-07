@@ -19,8 +19,8 @@ before_script:
 build:
   stage: build
   script:
-    # - docker build -t $IMAGE_NAME .
-    - docker build --pull --rm -f "Dockerfile" -t $IMAGE_NAME .
+    - docker build -t $IMAGE_NAME .
+
   only:
     - main
 

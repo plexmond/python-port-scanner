@@ -3,6 +3,7 @@ from werkzeug.security import check_password_hash
 import mysql.connector
 
 # db conn
+
 db = mysql.connector.connect(
     host="",
     user="",
@@ -14,6 +15,7 @@ cursor = db.cursor()
 
 login_blueprint = Blueprint('login', __name__)
 
+# protect app route
 @login_blueprint.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':

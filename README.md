@@ -35,7 +35,7 @@ To install and run this project, you need to follow these steps:
 You can clone the repository to your local machine by running the following commands:
 
 ```bash
-git clone https://git.fhict.nl/I508065/pyscan-webapp.git
+git clone https://github.com/plexmond/python-port-scanner
 ```
 
 
@@ -55,8 +55,8 @@ Before running the application, you will need to setup several settings:
 - Mailgun API key
 - Sender's email
 
-These settings are located in `config.py`. You need to make this file yourself in the project root directory.
-You can edit this file with the necessary values:
+These settings are located in `config.py`. By default it contains virtual environment variables you can put in GitHub actions.
+You can edit the `config.py` file with these values below to make it run without environment variables:
 
 ```python
 class Config:
@@ -98,4 +98,4 @@ Navigate to `http://localhost:5000` in your web browser. Enter the hostname and 
 
 ## Contact
 
-Created by [@I508065](https://git.fhict.nl/I508065)
+Created by [@plexmond](https://github.com/plexmond)

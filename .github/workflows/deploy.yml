@@ -25,6 +25,10 @@ jobs:
           context: .
           push: true
           tags: ${{ secrets.REGISTRY_LOGIN_SERVER }}/python-port-scanner:${{ github.sha }}
+          build-args: |
+          MAILGUN_API_KEY=${{ secrets.MAILGUN_API_KEY }}
+          MAILGUN_DOMAIN_NAME=${{ secrets.MAILGUN_DOMAIN_NAME }}
+          FROM_EMAIL=${{ secrets.FROM_EMAIL }}
 
   deploy:
     name: Deploy to ACI
@@ -38,6 +42,10 @@ jobs:
         uses: azure/login@v1
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Delete existing ACI
+        run: |
+          az container delete --resource-group ${{ secrets.RESOURCE_GROUP }} --name portscanner --yes
 
       - name: Create ACI / update
         run: |

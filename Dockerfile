@@ -1,7 +1,7 @@
 # base image
 FROM python:3.11
 
-# azure cli voor az credentials
+# azure cli for az credentials
 RUN curl -sL https://aka.ms/InstallAzureCLIDeb | bash
 
 # Set a working directory inside the container. (app directory)
@@ -15,6 +15,16 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # copy all code into container.
 COPY . .
+
+# env vars mail config
+ARG MAILGUN_API_KEY
+ARG MAILGUN_DOMAIN_NAME
+ARG FROM_EMAIL
+
+ENV MAILGUN_API_KEY=${MAILGUN_API_KEY}
+ENV MAILGUN_DOMAIN_NAME=${MAILGUN_DOMAIN_NAME}
+ENV FROM_EMAIL=${FROM_EMAIL}
+
 
 # expose port 5000 for the flask app
 EXPOSE 5000

@@ -41,5 +41,6 @@ jobs:
 
       - name: Create ACI / update
         run: |
-          az container create --resource-group ${{ secrets.RESOURCE_GROUP }} --name portscanner --image ${{ secrets.REGISTRY_LOGIN_SERVER }}/python-port-scanner:${{ github.sha }} --dns-name-label portscanner --ports 5000 --query "{FQDN:ipAddress.fqdn}" --output tsv
+          az container create --resource-group ${{ secrets.RESOURCE_GROUP }} --name portscanner --image ${{ secrets.REGISTRY_LOGIN_SERVER }}/python-port-scanner:${{ github.sha }} --dns-name-label portscanner --ports 5000 --registry-username ${{ secrets.REGISTRY_USERNAME }} --registry-password ${{ secrets.REGISTRY_PASSWORD }} --query "{FQDN:ipAddress.fqdn}" --output tsv
+
 

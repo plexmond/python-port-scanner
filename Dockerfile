@@ -1,8 +1,8 @@
 # base image
-FROM python:3.11
+FROM python:3.9-buster
 
 # azure cli for az credentials
-RUN apt-get update && curl -sL https://aka.ms/InstallAzureCLIDeb | bash
+RUN curl -sL https://aka.ms/InstallAzureCLIDeb | bash
 
 
 # set working dir inside container (app directory)
@@ -26,14 +26,12 @@ ENV MAILGUN_API_KEY=${MAILGUN_API_KEY}
 ENV MAILGUN_DOMAIN_NAME=${MAILGUN_DOMAIN_NAME}
 ENV FROM_EMAIL=${FROM_EMAIL}
 
-
 # expose port 5000 for the flask app
 EXPOSE 5000
 
 # flask production mode, listen on all interfaces
 ENV FLASK_APP=main.py
 ENV FLASK_RUN_HOST=0.0.0.0
-
 
 # cmd's executed when running container from image 
 CMD ["flask", "run"]

@@ -23,7 +23,7 @@ def login():
         password = request.form['password']
 
         # db username check
-        cursor.execute("SELECT password FROM users WHERE username=%s", (username,))
+        cursor.execute("SELECT password FROM '' WHERE username=%s", (username,))
         result = cursor.fetchone()
 
         # user exists

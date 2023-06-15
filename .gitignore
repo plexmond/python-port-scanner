@@ -1,5 +1,4 @@
 *.exe
 *.pyc
-todo.txt
 settings.json
 webapp.log

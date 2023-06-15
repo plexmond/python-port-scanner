@@ -4,7 +4,7 @@ FROM python:3.11
 # azure cli for az credentials
 RUN curl -sL https://aka.ms/InstallAzureCLIDeb | bash
 
-# Set a working directory inside the container. (app directory)
+# set working dir inside container (app directory)
 WORKDIR /app
 
 # copy requirements.txt file into the container 

@@ -2,7 +2,8 @@
 FROM python:3.11
 
 # azure cli for az credentials
-RUN curl -sL https://aka.ms/InstallAzureCLIDeb | bash
+RUN apt-get update && curl -sL https://aka.ms/InstallAzureCLIDeb | bash
+
 
 # set working dir inside container (app directory)
 WORKDIR /app
